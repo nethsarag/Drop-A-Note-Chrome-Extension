@@ -1,30 +1,142 @@
 import './styles.css'
 import { auth } from './firebase.js'
 import { login, logout, onAuthStateChanged } from './auth.js'
+import { subscribeNotes, saveNote, deleteNote, newNoteId } from './notes.js'
 
 const app = document.getElementById('app')
+let unsubscribe = null
+
+function h(tag, props = {}, ...children) {
+  const el = document.createElement(tag)
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') el.className = v
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v)
+    else el[k] = v
+  }
+  el.append(...children)
+  return el
+}
+
+function stopListening() {
+  if (unsubscribe) { unsubscribe(); unsubscribe = null }
+}
 
 function renderLogin() {
-  app.innerHTML = `
-    <div class="center">
-      <h1>Drop A Note</h1>
-      <button id="login">Sign in with Google</button>
-      <p id="err" class="err"></p>
-    </div>`
-  document.getElementById('login').onclick = async () => {
-    try { await login() }
-    catch (e) { document.getElementById('err').textContent = e.message }
+  const err = h('p', { class: 'err' })
+  app.replaceChildren(
+    h('div', { class: 'center' },
+      h('h1', {}, 'Drop A Note'),
+      h('button', {
+        class: 'primary',
+        onclick: async () => {
+          try { await login() } catch (e) { err.textContent = e.message }
+        }
+      }, 'Sign in with Google'),
+      err
+    )
+  )
+}
+
+function renderList(user) {
+  stopListening()
+  const list = h('div', { class: 'list' })
+  app.replaceChildren(
+    h('div', { class: 'bar' },
+      h('strong', {}, 'Drop A Note'),
+      h('span', { class: 'grow' }),
+      h('button', { class: 'primary', onclick: () => renderEditor(user, null) }, '+ New'),
+      h('button', { class: 'ghost', title: user.email, onclick: logout }, 'Sign out')
+    ),
+    list
+  )
+  unsubscribe = subscribeNotes(user.uid, (notes) => {
+    if (!notes.length) {
+      list.replaceChildren(h('p', { class: 'empty' }, 'No notes yet. Click + New.'))
+      return
+    }
+    list.replaceChildren(
+      ...notes.map((n) =>
+        h('div', { class: 'item', onclick: () => renderEditor(user, n) },
+          h('div', { class: 'item-title' }, n.title || 'Untitled'),
+          h('div', { class: 'item-body' }, (n.body || '').slice(0, 80))
+        )
+      )
+    )
+  })
+}
+
+function renderEditor(user, note) {
+  stopListening()
+  const id = note?.id ?? newNoteId(user.uid)
+  let exists = !!note
+  let timer = null
+  let armed = false
+
+  const status = h('span', { class: 'status' })
+  const title = h('input', {
+    class: 'title', placeholder: 'Title', value: note?.title ?? '', oninput: schedule
+  })
+  const body = h('textarea', {
+    class: 'body', placeholder: 'Start writing…', value: note?.body ?? '', oninput: schedule
+  })
+
+  function schedule() {
+    status.textContent = ''
+    clearTimeout(timer)
+    timer = setTimeout(flush, 500)
   }
+
+  async function flush() {
+    clearTimeout(timer)
+    timer = null
+    if (!exists && !title.value.trim() && !body.value.trim()) return
+    const isNew = !exists
+    exists = true
+    status.textContent = 'Saving…'
+    try {
+      await saveNote(user.uid, id, { title: title.value, body: body.value }, isNew)
+      status.textContent = 'Saved'
+    } catch (e) {
+      if (isNew) exists = false
+      status.textContent = 'Error saving'
+    }
+  }
+
+  const onHide = () => { if (timer) flush() }
+  window.addEventListener('pagehide', onHide)
+
+  function leave(saveFirst) {
+    if (saveFirst && timer) flush()
+    clearTimeout(timer)
+    timer = null
+    window.removeEventListener('pagehide', onHide)
+    renderList(user)
+  }
+
+  const del = h('button', {
+    class: 'ghost danger',
+    onclick: () => {
+      if (!armed) { armed = true; del.textContent = 'Click again to delete'; return }
+      if (exists) deleteNote(user.uid, id)
+      leave(false)
+    }
+  }, 'Delete')
+
+  app.replaceChildren(
+    h('div', { class: 'bar' },
+      h('button', { class: 'ghost', onclick: () => leave(true) }, '← Back'),
+      h('span', { class: 'grow' }),
+      status,
+      del
+    ),
+    title,
+    body
+  )
+  if (note) body.focus(); else title.focus()
 }
 
-function renderHome(user) {
-  app.innerHTML = `
-    <div class="center">
-      <p>Signed in as <strong id="email"></strong></p>
-      <button id="logout">Sign out</button>
-    </div>`
-  document.getElementById('email').textContent = user.email
-  document.getElementById('logout').onclick = logout
-}
-
-onAuthStateChanged(auth, (user) => (user ? renderHome(user) : renderLogin()))
+onAuthStateChanged(auth, (user) => {
+  stopListening()
+  if (user) renderList(user)
+  else renderLogin()
+})
