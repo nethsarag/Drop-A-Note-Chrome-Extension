@@ -1,0 +1,28 @@
+body {
+  width: 340px;
+  min-height: 420px;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px;
+}
+
+button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #1a73e8;
+  color: #fff;
+  cursor: pointer;
+}
+
+.err {
+  color: #c00;
+  font-size: 12px;
+}
