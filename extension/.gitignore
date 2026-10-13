@@ -1,24 +1,12 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Local notes with keys/IDs from setup; not needed in the repo
+env.txt
 
-node_modules
-dist
+# Private signing key; never commit
 *.pem
-.env
 
-# Editor directories and files
+# OS / editor
+.DS_Store
+Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
