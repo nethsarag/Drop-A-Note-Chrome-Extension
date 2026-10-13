@@ -1,28 +1,132 @@
+/* ---------- Themes: standard light (white) and dark ---------- */
+:root {
+  --bg: #ffffff;
+  --surface: #f6f7f9;
+  --surface-2: #eceef2;
+  --text: #202124;
+  --muted: #6b7078;
+  --border: #e3e5e9;
+  --accent: #1a73e8;
+  --accent-text: #ffffff;
+  --accent-hover: #1765cc;
+  --danger: #c5221f;
+  --danger-text: #ffffff;
+  --focus: #1a73e8;
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  --bg: #171717;
+  --surface: #202020;
+  --surface-2: #2b2b2b;
+  --text: #e8eaed;
+  --muted: #9aa0a6;
+  --border: #333333;
+  --accent: #8ab4f8;
+  --accent-text: #11213a;
+  --accent-hover: #a6c8ff;
+  --danger: #e05a52;
+  --danger-text: #ffffff;
+  --focus: #8ab4f8;
+}
+
 * { box-sizing: border-box; }
-body { width: 340px; min-height: 420px; margin: 0; font-family: system-ui, sans-serif; font-size: 14px; color: #202124; background: #fff; }
+html { background: var(--bg); transition: background-color .25s ease; }
+body {
+  width: 340px; min-height: 420px; margin: 0;
+  font-family: var(--font); font-size: 14px; color: var(--text);
+  background: var(--bg); transition: background-color .25s ease, color .25s ease;
+}
 
+/* ---------- Animations ---------- */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+.page { animation: fadeUp .22s ease-out; }
+.page.slide-in { animation: slideIn .22s ease-out; }
+.item.enter { animation: fadeUp .25s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Layout ---------- */
 .center { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 56px 20px; text-align: center; }
-.center h1 { margin: 0 0 8px; font-size: 22px; }
-.err { color: #b3261e; font-size: 12px; max-width: 280px; }
+.center h1 { margin: 0 0 8px; font-size: 22px; font-weight: 700; }
+.err { color: var(--danger); font-size: 12px; max-width: 280px; }
 
-.bar { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #eee; }
+.bar {
+  display: flex; align-items: center; gap: 6px; padding: 10px 12px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  transition: background-color .25s ease, border-color .25s ease;
+}
 .grow { flex: 1; }
-.status { font-size: 12px; color: #888; }
+.status { font-size: 12px; color: var(--muted); }
+.hint { color: var(--muted); font-size: 12px; max-width: 280px; margin: 0; }
 
-button { padding: 6px 12px; border: 0; border-radius: 8px; cursor: pointer; font: inherit; }
-button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
-button:disabled { cursor: wait; opacity: .65; }
-button.primary { background: #1a73e8; color: #fff; }
-button.ghost { background: transparent; color: #555; }
-button.ghost:hover { background: #f1f1f1; }
-button.danger { color: #c5221f; }
+/* ---------- Buttons ---------- */
+button {
+  padding: 6px 12px; border: 0; border-radius: 8px; cursor: pointer; font: inherit;
+  transition: background-color .15s ease, color .15s ease, transform .1s ease, opacity .15s ease;
+}
+button:active:not(:disabled) { transform: scale(.96); }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+button.primary { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+button.ghost { background: transparent; color: var(--muted); }
+button.ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+button.danger { color: var(--danger); }
+button.danger-solid { background: var(--danger); color: var(--danger-text); font-weight: 600; }
+button.danger-solid:hover:not(:disabled) { filter: brightness(1.1); }
+button.outline { background: transparent; color: var(--text); border: 1px solid var(--border); width: 100%; margin-top: 12px; }
+button.outline:hover { background: var(--surface-2); }
+button.icon-btn { display: inline-flex; align-items: center; padding: 6px 8px; }
 
+/* ---------- Notes list ---------- */
 .list { max-height: 360px; overflow-y: auto; }
-.item { display: block; width: 100%; padding: 10px 14px; border: 0; border-bottom: 1px solid #f0f0f0; border-radius: 0; background: #fff; text-align: left; cursor: pointer; }
-.item:hover { background: #f7f9fc; }
+.item {
+  display: block; width: 100%; padding: 10px 14px; border: 0; border-bottom: 1px solid var(--border);
+  border-radius: 0; background: transparent; color: inherit; text-align: left; cursor: pointer;
+  transition: background-color .15s ease;
+}
+.item:hover { background: var(--surface-2); }
 .item-title { font-weight: 600; }
-.item-body { color: #777; font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.empty { text-align: center; color: #888; padding: 40px 0; }
+.item-body { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty { text-align: center; color: var(--muted); padding: 40px 0; }
 
+.select-row { display: flex; align-items: center; gap: 10px; }
+.select-row.picked { background: var(--surface-2); }
+.item-text { min-width: 0; flex: 1; }
+.check-all { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; cursor: pointer; }
+
+/* ---------- Editor ---------- */
+input.title, textarea.body { background: transparent; color: var(--text); font-family: var(--font); }
 input.title { width: 100%; border: 0; padding: 12px 14px 6px; font-size: 16px; font-weight: 600; }
-textarea.body { width: 100%; height: 300px; border: 0; padding: 6px 14px 14px; resize: none; font: inherit; line-height: 1.5; }.hint { color: #555; font-size: 12px; max-width: 280px; margin: 0; }
+textarea.body { width: 100%; height: 300px; border: 0; padding: 6px 14px 14px; resize: none; font-size: 14px; line-height: 1.5; }
+::placeholder { color: var(--muted); opacity: .7; }
+
+/* ---------- Settings page ---------- */
+.settings { padding: 8px 14px 16px; }
+.settings section { margin-top: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.settings h2 { margin: 0 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.row { display: flex; align-items: center; justify-content: space-between; }
+
+.account { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex: none; }
+.avatar.fallback { display: flex; align-items: center; justify-content: center; background: var(--accent); color: var(--accent-text); font-weight: 700; font-size: 16px; }
+.account-text { min-width: 0; }
+.account-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.account-email { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Dark mode switch ---------- */
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; flex: none; }
+.switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+.slider { position: absolute; inset: 0; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); transition: background-color .25s ease; }
+.slider::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--muted); transition: transform .25s cubic-bezier(.4, 0, .2, 1), background-color .25s ease;
+}
+.switch input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+.switch input:checked + .slider::before { transform: translateX(20px); background: var(--accent-text); }
+.switch input:focus-visible + .slider { outline: 2px solid var(--focus); outline-offset: 2px; }

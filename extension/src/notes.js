@@ -1,5 +1,5 @@
 import {
-  collection, doc, setDoc, updateDoc, deleteDoc,
+  collection, doc, setDoc, updateDoc, deleteDoc, writeBatch,
   onSnapshot, query, orderBy, serverTimestamp
 } from 'firebase/firestore'
 import { db } from './firebase.js'
@@ -33,4 +33,14 @@ export function saveNote(uid, id, { title, body }, isNew) {
 
 export function deleteNote(uid, id) {
   return deleteDoc(doc(notesCol(uid), id))
+}
+
+// Delete many notes at once. Firestore batches are limited to 500 writes,
+// so larger selections are split into chunks.
+export async function deleteNotes(uid, ids) {
+  for (let i = 0; i < ids.length; i += 450) {
+    const batch = writeBatch(db)
+    ids.slice(i, i + 450).forEach((id) => batch.delete(doc(notesCol(uid), id)))
+    await batch.commit()
+  }
 }
