@@ -15,7 +15,7 @@ A simple notepad that lives in your Chrome toolbar. Sign in with Google, jot som
 Requires [Node.js](https://nodejs.org) 20 or newer.
 
 ```bash
-git clone https://github.com/<nethsarag>/Drop-A-Note-Chrome-Extension.git
+git clone https://github.com/YOUR-GITHUB-USERNAME/Drop-A-Note-Chrome-Extension.git
 cd Drop-A-Note-Chrome-Extension/extension
 npm install
 npm run build
@@ -42,7 +42,7 @@ Drop A Note uses Firebase Authentication and Firestore. To point it at your own 
 
 1. **Firebase:** create a project, add a Web app, and paste its config into `extension/src/firebase.js`. Enable **Firestore Database** and the **Google** sign-in provider.
 2. **Extension key:** run `node gen-key.mjs` inside `extension/`. Put the printed public key in the `"key"` field of `extension/public/manifest.json`. Keep the generated `key.pem` private (it's git-ignored). The printed extension ID stays the same every time you load the extension.
-3. **Google Cloud OAuth client:** in the same project, create an OAuth client of type **Chrome Extension** using that extension ID. Put its client ID in `manifest.json` under `oauth2.client_id`. Do not use a Web application or Desktop client. The extension ID for the included key is `odlameecjipmbmbejkplpemijjgpljce`.
+3. **Google Cloud OAuth client:** sign-in uses `chrome.identity.launchWebAuthFlow`, so it works in Chrome, Brave and Edge. In the **same Google Cloud project as the Firebase config** (`projectId: drop-a-note`, project number `163907376482`), use an OAuth client of type **Web application** (the current client ID is configured in `extension/public/background.js`) and add this exact authorized redirect URI: `https://odlameecjipmbmbejkplpemijjgpljce.chromiumapp.org/`. Put that client ID in `extension/public/background.js` (`CLIENT_ID`). A client from another project causes Firebase `auth/invalid-credential` because its access-token audience is wrong. Verify the extension ID on `chrome://extensions`; the current manifest key produces `odlameecjipmbmbejkplpemijjgpljce`.
 4. **Firestore rules:** publish rules so each user can only touch their own notes:
 
    ```
@@ -59,7 +59,8 @@ Drop A Note uses Firebase Authentication and Firestore. To point it at your own 
 
 ## How it works
 
-- `src/auth.js`: gets a Google token with `chrome.identity` and signs in to Firebase with it
+- `public/background.js`: runs the Google sign-in window (`chrome.identity.launchWebAuthFlow`) in the service worker
+- `src/auth.js`: signs in to Firebase with the token the service worker obtained
 - `src/notes.js`: Firestore reads and writes at `users/{uid}/notes/{noteId}`
 - `src/main.js`: the popup UI (login, note list, editor)
 - `src/firebase.js`: Firebase setup with a popup-safe in-memory cache

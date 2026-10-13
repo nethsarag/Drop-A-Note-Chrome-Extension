@@ -1,10 +1,19 @@
 import './styles.css'
 import { auth } from './firebase.js'
-import { login, logout, onAuthStateChanged } from './auth.js'
+import { startLogin, consumePendingLogin, logout, onAuthStateChanged } from './auth.js'
 import { subscribeNotes, saveNote, deleteNote, newNoteId } from './notes.js'
 
 const app = document.getElementById('app')
 let unsubscribe = null
+
+function renderFatalError(message) {
+  app.replaceChildren(
+    h('div', { class: 'center' },
+      h('h1', {}, 'Drop A Note'),
+      h('p', { class: 'err' }, message)
+    )
+  )
+}
 
 function h(tag, props = {}, ...children) {
   const el = document.createElement(tag)
@@ -22,27 +31,51 @@ function stopListening() {
   if (unsubscribe) { unsubscribe(); unsubscribe = null }
 }
 
+let loginMessage = ''
+
 function renderLogin() {
-  const err = h('p', { class: 'err' })
+  const note = h('p', { class: loginMessage ? 'err' : 'hint' }, loginMessage)
   const button = h('button', {
     class: 'primary',
-    onclick: async () => {
+    onclick: () => {
       button.disabled = true
-      err.textContent = ''
-      try { await login() } catch (e) {
-        err.textContent = e?.message || 'Unable to sign in. Please try again.'
-        button.disabled = false
-      }
+      note.className = 'hint'
+      note.textContent = 'A Google sign-in window is opening. When you finish, click the Drop A Note icon again.'
+      startLogin()
     }
   }, 'Sign in with Google')
   app.replaceChildren(
     h('div', { class: 'center' },
       h('h1', {}, 'Drop A Note'),
       button,
-      err
+      note
     )
   )
 }
+
+async function checkPendingLogin() {
+  try {
+    await consumePendingLogin()
+  } catch (e) {
+    const msg = e?.message || ''
+    loginMessage = /did not approve|closed|cancel/i.test(msg)
+      ? 'Sign-in was cancelled.'
+      : msg || 'Unable to sign in. Please try again.'
+    if (!auth.currentUser) renderLogin()
+  }
+
+  window.addEventListener('error', (event) => {
+    renderFatalError(event.error?.message || 'The extension could not start. Reload it from chrome://extensions.')
+  })
+
+  window.addEventListener('unhandledrejection', (event) => {
+    renderFatalError(event.reason?.message || 'The extension could not start. Reload it from chrome://extensions.')
+  })
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'session' && changes.pendingLogin?.newValue) checkPendingLogin()
+})
 
 function renderList(user) {
   stopListening()
@@ -159,3 +192,5 @@ onAuthStateChanged(auth, (user) => {
   if (user) renderList(user)
   else renderLogin()
 })
+
+checkPendingLogin()
