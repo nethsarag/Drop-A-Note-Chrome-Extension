@@ -6,7 +6,7 @@ A simple notepad that lives in your Chrome toolbar. Sign in with Google, jot som
 
 - One-click popup: **+ New**, type, done
 - Autosave while you type (the popup shows "Saving…" then "Saved")
-- Notes sync through your Google account and are cached offline, so they still work without a connection
+- Notes sync through your Google account; edits are saved automatically when the connection is available
 - Saves even if the popup closes mid-typing
 - Delete needs two clicks, so you can't remove a note by accident
 
@@ -27,6 +27,13 @@ Then in Chrome:
 2. Turn on **Developer mode**
 3. Click **Load unpacked** and select the `extension/dist` folder
 
+To create a shareable ZIP, run `npm run build`, then zip the contents of `extension/dist`
+(not the `dist` folder itself). Before publishing, upload the ZIP in the Chrome Web Store
+Developer Dashboard and provide a publicly reachable privacy policy URL. The extension
+does not collect analytics or sell data; its privacy policy should explain that note
+content is stored in the configured Firebase project and accessed only for the signed-in
+Google account.
+
 > **Note:** sign-in only works for the extension ID registered with the OAuth client in `manifest.json`. If you're running your own copy, follow *Run your own backend* below.
 
 ## Run your own backend
@@ -35,7 +42,7 @@ Drop A Note uses Firebase Authentication and Firestore. To point it at your own 
 
 1. **Firebase:** create a project, add a Web app, and paste its config into `extension/src/firebase.js`. Enable **Firestore Database** and the **Google** sign-in provider.
 2. **Extension key:** run `node gen-key.mjs` inside `extension/`. Put the printed public key in the `"key"` field of `extension/public/manifest.json`. Keep the generated `key.pem` private (it's git-ignored). The printed extension ID stays the same every time you load the extension.
-3. **Google Cloud OAuth client:** in the same project, create an OAuth client of type **Chrome Extension** using that extension ID. Put its client ID in `manifest.json` under `oauth2.client_id`.
+3. **Google Cloud OAuth client:** in the same project, create an OAuth client of type **Chrome Extension** using that extension ID. Put its client ID in `manifest.json` under `oauth2.client_id`. Do not use a Web application or Desktop client. The extension ID for the included key is `odlameecjipmbmbejkplpemijjgpljce`.
 4. **Firestore rules:** publish rules so each user can only touch their own notes:
 
    ```
@@ -55,7 +62,7 @@ Drop A Note uses Firebase Authentication and Firestore. To point it at your own 
 - `src/auth.js`: gets a Google token with `chrome.identity` and signs in to Firebase with it
 - `src/notes.js`: Firestore reads and writes at `users/{uid}/notes/{noteId}`
 - `src/main.js`: the popup UI (login, note list, editor)
-- `src/firebase.js`: Firebase setup with a persistent offline cache
+- `src/firebase.js`: Firebase setup with a popup-safe in-memory cache
 
 ## Privacy
 

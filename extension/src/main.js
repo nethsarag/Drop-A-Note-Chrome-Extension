@@ -11,6 +11,7 @@ function h(tag, props = {}, ...children) {
   for (const [k, v] of Object.entries(props)) {
     if (k === 'class') el.className = v
     else if (k.startsWith('on')) el.addEventListener(k.slice(2), v)
+    else if (k.includes('-')) el.setAttribute(k, v)
     else el[k] = v
   }
   el.append(...children)
@@ -23,15 +24,21 @@ function stopListening() {
 
 function renderLogin() {
   const err = h('p', { class: 'err' })
+  const button = h('button', {
+    class: 'primary',
+    onclick: async () => {
+      button.disabled = true
+      err.textContent = ''
+      try { await login() } catch (e) {
+        err.textContent = e?.message || 'Unable to sign in. Please try again.'
+        button.disabled = false
+      }
+    }
+  }, 'Sign in with Google')
   app.replaceChildren(
     h('div', { class: 'center' },
       h('h1', {}, 'Drop A Note'),
-      h('button', {
-        class: 'primary',
-        onclick: async () => {
-          try { await login() } catch (e) { err.textContent = e.message }
-        }
-      }, 'Sign in with Google'),
+      button,
       err
     )
   )
@@ -56,12 +63,18 @@ function renderList(user) {
     }
     list.replaceChildren(
       ...notes.map((n) =>
-        h('div', { class: 'item', onclick: () => renderEditor(user, n) },
+        h('button', {
+          class: 'item',
+          type: 'button',
+          onclick: () => renderEditor(user, n)
+        },
           h('div', { class: 'item-title' }, n.title || 'Untitled'),
           h('div', { class: 'item-body' }, (n.body || '').slice(0, 80))
         )
       )
     )
+  }, () => {
+    list.replaceChildren(h('p', { class: 'empty err' }, 'Unable to load notes. Check your connection and try again.'))
   })
 }
 
@@ -74,10 +87,10 @@ function renderEditor(user, note) {
 
   const status = h('span', { class: 'status' })
   const title = h('input', {
-    class: 'title', placeholder: 'Title', value: note?.title ?? '', oninput: schedule
+    class: 'title', 'aria-label': 'Note title', placeholder: 'Title', value: note?.title ?? '', oninput: schedule
   })
   const body = h('textarea', {
-    class: 'body', placeholder: 'Start writing…', value: note?.body ?? '', oninput: schedule
+    class: 'body', 'aria-label': 'Note body', placeholder: 'Start writing…', value: note?.body ?? '', oninput: schedule
   })
 
   function schedule() {
@@ -105,8 +118,8 @@ function renderEditor(user, note) {
   const onHide = () => { if (timer) flush() }
   window.addEventListener('pagehide', onHide)
 
-  function leave(saveFirst) {
-    if (saveFirst && timer) flush()
+  async function leave(saveFirst) {
+    if (saveFirst && timer) await flush()
     clearTimeout(timer)
     timer = null
     window.removeEventListener('pagehide', onHide)
@@ -115,10 +128,16 @@ function renderEditor(user, note) {
 
   const del = h('button', {
     class: 'ghost danger',
-    onclick: () => {
+    onclick: async () => {
       if (!armed) { armed = true; del.textContent = 'Click again to delete'; return }
-      if (exists) deleteNote(user.uid, id)
-      leave(false)
+      del.disabled = true
+      try {
+        if (exists) await deleteNote(user.uid, id)
+        await leave(false)
+      } catch {
+        del.disabled = false
+        status.textContent = 'Error deleting'
+      }
     }
   }, 'Delete')
 

@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Drop A Note",
-  "version": "0.1.0",
-  "description": "A simple notepad in your browser, synced with your Google account.",
+  "version": "1.0.0",
+  "minimum_chrome_version": "109",
+  "description": "A private, lightweight notepad that syncs your notes with your Google account.",
   "action": {
     "default_popup": "popup.html",
     "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
@@ -11,7 +12,11 @@
   "permissions": ["identity"],
   "oauth2": {
     "client_id": "1011937534818-geqnkpejgfro8sd9lrrcn0e3nn1q0t4t.apps.googleusercontent.com",
-    "scopes": ["openid", "email", "profile"]
+    "scopes": [
+      "openid",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
   },
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwmXShdJ0qqJy5cPaJw+/fgujtYsJNulT4AIVZp0YAO+4ddJbs4joG2Qozx+pkdt5RwK4f6saI8hnCyel5yAMSL5NyrxpJ6BhCP7vP+LAHJM6QZ14ITnmFxu5aAEGZsKRVi/FaoQuzrzeEo4viy1x/kx2Pva9Uaa7oA/BhBfwYhtDCq7aL3k/n2zNjyKv+qCmTxL1fNCh5ezovRGJk0Fv02st9u6gfrxBVbszgrnCDfIKdouiudn5VNeyLth9TOsvg3QRJMAc9mpA4mYrbLIjNmwYrVftoqpNlgH1VoZ1OSGRB3L56gGYEYX+aHmzxqhkXTQvdr2O2CEcZ7KLjvJJjwIDAQAB"
 }

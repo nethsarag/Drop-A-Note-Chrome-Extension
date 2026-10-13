@@ -5,7 +5,7 @@ function getGoogleToken() {
   return new Promise((resolve, reject) => {
     chrome.identity.getAuthToken({ interactive: true }, (token) => {
       if (chrome.runtime.lastError || !token) {
-        reject(new Error(chrome.runtime.lastError?.message || 'No token'))
+        reject(new Error(chrome.runtime.lastError?.message || 'Google sign-in did not return a token.'))
       } else {
         resolve(token)
       }
@@ -21,7 +21,12 @@ export async function login() {
 
 export async function logout() {
   await signOut(auth)
-  await chrome.identity.clearAllCachedAuthTokens()
+  await new Promise((resolve, reject) => {
+    chrome.identity.clearAllCachedAuthTokens(() => {
+      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message))
+      else resolve()
+    })
+  })
 }
 
 export { onAuthStateChanged }

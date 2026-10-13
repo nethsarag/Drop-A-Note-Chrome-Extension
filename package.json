@@ -1,0 +1,9 @@
+{
+  "name": "drop-a-note",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix extension run build",
+    "dev": "npm --prefix extension run dev",
+    "preview": "npm --prefix extension run preview"
+  }
+}

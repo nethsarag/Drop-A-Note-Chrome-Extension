@@ -10,13 +10,13 @@ export function newNoteId(uid) {
   return doc(notesCol(uid)).id
 }
 
-export function subscribeNotes(uid, callback) {
+export function subscribeNotes(uid, callback, onError) {
   const q = query(notesCol(uid), orderBy('updatedAt', 'desc'))
   return onSnapshot(q, (snap) => {
     callback(
       snap.docs.map((d) => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }))
     )
-  })
+  }, onError)
 }
 
 export function saveNote(uid, id, { title, body }, isNew) {
