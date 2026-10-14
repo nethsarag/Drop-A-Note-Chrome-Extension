@@ -23,7 +23,7 @@ export function saveNote(uid, id, { title, body }, isNew) {
   const ref = doc(notesCol(uid), id)
   if (isNew) {
     return setDoc(ref, {
-      title, body,
+      title, body, pinned: false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     })
@@ -35,12 +35,15 @@ export function deleteNote(uid, id) {
   return deleteDoc(doc(notesCol(uid), id))
 }
 
-// Delete many notes at once. Firestore batches are limited to 500 writes,
-// so larger selections are split into chunks.
-export async function deleteNotes(uid, ids) {
-  for (let i = 0; i < ids.length; i += 450) {
-    const batch = writeBatch(db)
-    ids.slice(i, i + 450).forEach((id) => batch.delete(doc(notesCol(uid), id)))
-    await batch.commit()
-  }
+// Pin / unpin several notes at once (does not change updatedAt)
+export function setPinned(uid, ids, pinned) {
+  const batch = writeBatch(db)
+  ids.forEach((id) => batch.update(doc(notesCol(uid), id), { pinned }))
+  return batch.commit()
+}
+
+export function deleteMany(uid, ids) {
+  const batch = writeBatch(db)
+  ids.forEach((id) => batch.delete(doc(notesCol(uid), id)))
+  return batch.commit()
 }
