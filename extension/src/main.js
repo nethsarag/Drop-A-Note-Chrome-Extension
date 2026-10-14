@@ -1,5 +1,4 @@
 import './styles.css'
-import { auth } from './firebase.js'
 import { startLogin, consumePendingLogin, logout, onAuthStateChanged } from './auth.js'
 import { subscribeNotes, saveNote, deleteNote, newNoteId, setPinned, deleteMany } from './notes.js'
 
@@ -46,7 +45,7 @@ function icon(name, size = 22, filled = false) {
 }
 
 function fmtDate(ts) {
-  const d = ts?.toDate ? ts.toDate() : null
+  const d = ts ? new Date(ts) : null
   if (!d) return ''
   const now = new Date()
   const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1)
@@ -178,7 +177,7 @@ async function checkPendingLogin() {
   } catch (e) {
     const m = e?.message || ''
     loginMessage = /did not approve|closed|cancel/i.test(m) ? 'Sign-in was cancelled.' : m || 'Unable to sign in. Please try again.'
-    if (!auth.currentUser) renderLogin()
+    if (!currentUser) renderLogin()
   }
 }
 window.addEventListener('error', (e) => renderFatalError(e.error?.message || 'The extension could not start. Reload it from chrome://extensions.'))
@@ -375,7 +374,7 @@ function renderEditor(note) {
       if (exists) { try { await setPinned(user.uid, [id], pinned) } catch { toast('Could not update pin') } }
     } }, icon('pin', 22, pinned))
 
-  const stamp = (note?.updatedAt?.toDate ? note.updatedAt.toDate() : new Date())
+  const stamp = (note?.updatedAt ? new Date(note.updatedAt) : new Date())
     .toLocaleString([], { dateStyle: 'long', timeStyle: 'short' })
 
   mount(h('div', { style: 'display:flex;flex-direction:column;height:100%' },
@@ -462,15 +461,14 @@ document.addEventListener('keydown', (e) => {
   else if (view === 'list' && selecting) { selecting = false; selected.clear(); repaint?.() }
 })
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged((user) => {
   stopListening()
   currentUser = user
   notes = []; loaded = false; loadError = false
   selecting = false; selected.clear(); query = ''
   if (user) {
     unsubscribe = subscribeNotes(user.uid,
-      (list) => { notes = list; loaded = true; loadError = false; if (view === 'list') repaint?.() },
-      () => { loaded = true; loadError = true; if (view === 'list') repaint?.() })
+      (list) => { notes = list; loaded = true; loadError = false; if (view === 'list') repaint?.() })
     renderList()
   } else {
     renderLogin()
