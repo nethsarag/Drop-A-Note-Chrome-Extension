@@ -1,28 +1,42 @@
-{
-  "manifest_version": 3,
-  "name": "Drop A Note",
-  "version": "1.0.0",
-  "minimum_chrome_version": "109",
-  "description": "A private, lightweight notepad that syncs your notes with your Google account.",
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
-  "permissions": [
-    "identity",
-    "storage"
-  ],
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwmXShdJ0qqJy5cPaJw+/fgujtYsJNulT4AIVZp0YAO+4ddJbs4joG2Qozx+pkdt5RwK4f6saI8hnCyel5yAMSL5NyrxpJ6BhCP7vP+LAHJM6QZ14ITnmFxu5aAEGZsKRVi/FaoQuzrzeEo4viy1x/kx2Pva9Uaa7oA/BhBfwYhtDCq7aL3k/n2zNjyKv+qCmTxL1fNCh5ezovRGJk0Fv02st9u6gfrxBVbszgrnCDfIKdouiudn5VNeyLth9TOsvg3QRJMAc9mpA4mYrbLIjNmwYrVftoqpNlgH1VoZ1OSGRB3L56gGYEYX+aHmzxqhkXTQvdr2O2CEcZ7KLjvJJjwIDAQAB",
-  "background": {
-    "service_worker": "background.js"
-  }
+﻿{
+    "manifest_version":  3,
+    "name":  "Drop A Note",
+    "version":  "1.0.0",
+    "minimum_chrome_version":  "109",
+    "description":  "A private, lightweight notepad that syncs your notes with your Google account.",
+    "action":  {
+                   "default_popup":  "popup.html",
+                   "default_icon":  {
+                                        "16":  "icons/icon16.png",
+                                        "48":  "icons/icon48.png",
+                                        "128":  "icons/icon128.png"
+                                    }
+               },
+    "icons":  {
+                  "16":  "icons/icon16.png",
+                  "48":  "icons/icon48.png",
+                  "128":  "icons/icon128.png"
+              },
+    "permissions":  [
+                        "identity",
+                        "storage"
+                    ],
+    "key":  "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwmXShdJ0qqJy5cPaJw+/fgujtYsJNulT4AIVZp0YAO+4ddJbs4joG2Qozx+pkdt5RwK4f6saI8hnCyel5yAMSL5NyrxpJ6BhCP7vP+LAHJM6QZ14ITnmFxu5aAEGZsKRVi/FaoQuzrzeEo4viy1x/kx2Pva9Uaa7oA/BhBfwYhtDCq7aL3k/n2zNjyKv+qCmTxL1fNCh5ezovRGJk0Fv02st9u6gfrxBVbszgrnCDfIKdouiudn5VNeyLth9TOsvg3QRJMAc9mpA4mYrbLIjNmwYrVftoqpNlgH1VoZ1OSGRB3L56gGYEYX+aHmzxqhkXTQvdr2O2CEcZ7KLjvJJjwIDAQAB",
+    "background":  {
+                       "service_worker":  "background.js",
+                       "scripts":  [
+                                       "background.js"
+                                   ]
+                   },
+    "browser_specific_settings":  {
+                                      "gecko":  {
+                                                    "id":  "drop-a-note@nethsara",
+                                                    "strict_min_version":  "128.0",
+                                                    "data_collection_permissions":  {
+                                                                                        "required":  [
+                                                                                                         "personallyIdentifyingInfo"
+                                                                                                     ]
+                                                                                    }
+                                                }
+                                  }
 }
